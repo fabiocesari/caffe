@@ -21,7 +21,7 @@ def main(argv):
     # Required arguments: input and output files.
     parser.add_argument(
         "input_file",
-        help="Input image, directory, or npy."
+        help="Input image, directory, npy, or txt containing list of image paths."
     )
     parser.add_argument(
         "output_file",
@@ -109,11 +109,16 @@ def main(argv):
             input_scale=args.input_scale, raw_scale=args.raw_scale,
             channel_swap=channel_swap)
 
-    # Load numpy array (.npy), directory glob (*.jpg), or image file.
+    # Load numpy array (.npy), directory glob (*.jpg), image file, or txt with list of image paths.
     args.input_file = os.path.expanduser(args.input_file)
     if args.input_file.endswith('npy'):
         print("Loading file: %s" % args.input_file)
         inputs = np.load(args.input_file)
+    elif args.input_file.endswith('txt'):
+        print("Loading images in file: %s" % args.input_file)
+        with open(args.input_file) as f:
+            lines = f.read().splitlines()
+        inputs = [caffe.io.load_image(im_f) for im_f in lines]
     elif os.path.isdir(args.input_file):
         print("Loading folder: %s" % args.input_file)
         inputs =[caffe.io.load_image(im_f)
